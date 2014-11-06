@@ -71,7 +71,7 @@ app.factory('DataService', function ($http, $q){
   var DataService = {};
   DataService.getData = function(path){
     var deferred = $q.defer();
-    $http.get('viewer/data/'+path+'.json').
+    $http.get('data/'+path+'.json').
         success(function(data, status, headers, config) {
           deferred.resolve(data);
         }).
