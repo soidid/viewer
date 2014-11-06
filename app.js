@@ -11,6 +11,7 @@ app.filter('htmlToPlaintext', function() {
       return plain;
     }
 });
+
 //http://stackoverflow.com/questions/16310298/if-a-ngsrc-path-resolves-to-a-404-is-there-a-way-to-fallback-to-a-default
 app.directive('errSrc', function() {
   return {
@@ -85,6 +86,7 @@ app.factory('DataService', function ($http, $q){
 })
 app.controller('NavCtrl', ['$scope', '$location', function ($scope, $location){
    $scope.go = function(path){
+      $("body").scrollTop(0);
       $location.path(path);
    };
 }]);
@@ -93,13 +95,14 @@ app.controller('IndexCtrl', ['$scope', 'DataService', '$location', '$sce', funct
   DataService.getData('parsed_issues').then(function(data){
       $scope.issues = data;
   });
-  
+
   $scope.candidateFilter = function(n){
       if(n.state === 'responded')
          return n;
   };
 
   $scope.go = function(path){
+      $("body").scrollTop(0);
       $location.path(path);
   };
 
@@ -124,12 +127,17 @@ app.controller('CategoryCtrl', ['$scope', 'DataService', '$location', '$sce', '$
   };
 
   $scope.toggleQuestion = function(qid){
-    if($scope.focusQuestion === qid)
+    if($scope.focusQuestion === qid){
        $scope.focusQuestion = false;
-    else
-       $scope.focusQuestion = qid;
-  };
+       $scope.focusQuestionTitle = null;
 
+    }else{
+      $scope.focusQuestion = qid;
+      $scope.focusQuestionTitle = $scope.questions[qid].title;
+
+    }
+       
+  };
 
   $scope.toTrusted = function(html_code) {
     return $sce.trustAsHtml(html_code);
@@ -153,11 +161,13 @@ app.controller('CategoryCtrl', ['$scope', 'DataService', '$location', '$sce', '$
   win.scroll(function() {
       fxel     = $(".q_title_active");
       var w = $(".q_title_active").width();
-      if(fxel && fxel.position()){
+      if(fxel && fxel.offset()){
 
-        eloffset = fxel.position().top + 150;
+        eloffset = fxel.offset().top;
+
+       
         if (eloffset < win.scrollTop()) {
-
+        //if (eloffset < 0) {
             $(".q_fixTitle").addClass("q_title_fixed");
             fxel.width(w+'px');
         } else {
@@ -167,6 +177,12 @@ app.controller('CategoryCtrl', ['$scope', 'DataService', '$location', '$sce', '$
       }
 
   });
+
+  $scope.pendingFilter = function(n){
+     controller.log(n.state);
+     if(n.state === 'pending')
+        return n;
+  };
 
 
 

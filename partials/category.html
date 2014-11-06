@@ -1,11 +1,16 @@
-<header class="md-whiteframe-z1">
-  <input class="fs"><i class="search icon"></i>
-</header>
+<div ng-include="'partials/nav.html'"></div>
 
 <div id="content">
 
 <div class="wrapper q_fixTitle">
-  <div class="q_title_fixed_inner">SOME QUESTION TITLE</div>
+  <div class="q_title_fixed_inner">{{focusQuestionTitle | limitTo:40 }}{{(focusQuestionTitle).length>40?'...':''}}
+
+  <!-- function tab goes here -->
+  <a target="_blank" href="//taipei.wethepeople.tw/#!/question/{{focusQuestion}}"><i class="fa fa-cube"></i></a>
+  <!-- ...................... -->
+
+  </div>
+
 </div>
 
 <div class="wrapper">
@@ -18,19 +23,12 @@
   <div ng-class="{'md-whiteframe-z1':showQuestion(questions[q].id),'q_item_active':showQuestion(questions[q].id)}" class="q_item" ng-repeat="q in i">
 
     <div class="q_title" ng-class="{'q_title_active':showQuestion(questions[q].id)}" ng-click="toggleQuestion(questions[q].id)">
-      {{questions[q].title | limitTo:40}}
+      {{questions[q].title | limitTo:40}}{{(questions[q].title).length>40?'...':''}}
 
-      <!--
-      <span ng-repeat="c in currentCandidates">
-
-      <img class="c_img" ng-src="images/candidates_avatar/{{c}}.jpg" ng-if="candidates[c][questions[q].id]==='responded'">
-      <img class="c_img" ng-src="images/candidates_avatar_bw/{{c}}.jpg" ng-if="candidates[c][questions[q].id]==='pending'">
-      <img class="c_img" src="images/candidate-not-found.jpg" ng-if="candidates[c][questions[q].id]==='notasked'"></span>
-    -->
-
+    <!-- function tab goes here -->
+        <a target="_blank" href="//taipei.wethepeople.tw/#!/question/{{questions[q].id}}"><i class="fa fa-cube"></i></a>
+    <!-- ...................... -->
     </div>
-
-
 
     <div class="q_content" ng-if="showQuestion(questions[q].id)">
         <div class="q_postdate l_inline">{{questions[q].post_timestamp | date:'MM / dd'}}</div>
@@ -50,6 +48,16 @@
             <div class="r_postdate l_inline l_vtop">{{r.postTimeStamp | date:'MM / dd'}}</div>
 
         </div>
+
+        
+        <div class="q_pending_candidates l_center">
+            <h3 ng-if="questions[q].pendingCount > 0">娃，我們還在等待以下候選人的回覆 :</h3>
+            <h3 ng-if="questions[q].pendingCount === 0">Ya! 所有被提問候選人都已回覆 :)</h3>
+            <span ng-repeat="c in candidates">  
+               <img class="c_img" ng-src="images/candidates_avatar_bw/{{c.id}}.jpg" ng-if="c[questions[q].id]==='pending'">
+            </span>
+        </div>
+   
     </div>
 
   </div>

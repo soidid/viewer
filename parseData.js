@@ -53,14 +53,18 @@ getData('questions').then(function(questions){
 
                     }
 
-                    //remove quit candidates
+                    //remove quit candidates & check if this question is fully answered
+                    var pendingCount = 0;
                     for(ckey in questions[key].addressing){
                         //console.log(ckey);
                         if(currentCandidates.indexOf(ckey) === -1){
                           questions[key].addressing[ckey]={};
                         }
+                        if(questions[key].addressing[ckey].state === 'pending'){
+                          pendingCount++;
+                        }
                     }
-                    
+                    questions[key].pendingCount = pendingCount;
 
                     //save to candidate data
                     for(var i in currentCandidates){
