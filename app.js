@@ -1,0 +1,176 @@
+
+var app = angular.module("app", [
+  "ngRoute"
+]);
+
+app.filter('htmlToPlaintext', function() {
+    return function(text) {
+      var plain = String(text).replace(/<[^>]+>/gm, '');
+
+      plain.replace(/&nbsp;/gi,' ');
+      return plain;
+    }
+});
+//http://stackoverflow.com/questions/16310298/if-a-ngsrc-path-resolves-to-a-404-is-there-a-way-to-fallback-to-a-default
+app.directive('errSrc', function() {
+  return {
+    link: function(scope, element, attrs) {
+
+      scope.$watch(function() {
+          return attrs['ngSrc'];
+        }, function (value) {
+          if (!value) {
+            element.attr('src', attrs.errSrc);
+          }
+      });
+
+      element.bind('error', function() {
+        element.attr('src', attrs.errSrc);
+      });
+    }
+  }
+});
+
+app.config(['$routeProvider','$locationProvider',
+  function($routeProvider,$locationProvider){
+    $routeProvider.
+      when('/questions',{
+      templateUrl: 'partials/questions.html',
+      controller: 'IndexCtrl'
+    }).
+      when('/candidates',{
+      templateUrl: 'partials/candidates.html',
+      controller: 'IndexCtrl'
+    }).
+      when('/issues',{
+      templateUrl: 'partials/issues.html',
+      controller: 'IndexCtrl'
+    }).
+      when('/category',{
+      templateUrl: 'partials/category.html',
+      controller: 'CategoryCtrl'
+    }).
+      when('/category/:index',{
+      templateUrl: 'partials/category.html',
+      controller: 'CategoryCtrl'
+    }).
+      otherwise({
+      redirectTo:'/',
+      templateUrl: 'partials/index.html',
+      controller: 'IndexCtrl'
+    });
+
+    //$locationProvider.html5Mode(true);
+
+  }
+]);
+
+app.factory('DataService', function ($http, $q){
+
+  var DataService = {};
+  DataService.getData = function(path){
+    var deferred = $q.defer();
+    $http.get('/data/'+path+'.json').
+        success(function(data, status, headers, config) {
+          deferred.resolve(data);
+        }).
+        error(function(data, status, headers, config) {
+          deferred.resolve(data);
+        });
+    return deferred.promise;
+  };
+
+
+  return DataService;
+})
+app.controller('NavCtrl', ['$scope', '$location', function ($scope, $location){
+   $scope.go = function(path){
+      $location.path(path);
+   };
+}]);
+app.controller('IndexCtrl', ['$scope', 'DataService', '$location', '$sce', function ($scope, DataService, $location, $sce){
+  
+  DataService.getData('parsed_issues').then(function(data){
+      $scope.issues = data;
+  });
+  
+  $scope.candidateFilter = function(n){
+      if(n.state === 'responded')
+         return n;
+  };
+
+  $scope.go = function(path){
+      $location.path(path);
+  };
+
+
+}]);
+app.controller('CategoryCtrl', ['$scope', 'DataService', '$location', '$sce', '$routeParams', function ($scope, DataService, $location, $sce, $routeParams){
+      
+  DataService.getData('parsed_questions').then(function(data){
+      $scope.questions = data;
+  });
+  DataService.getData('parsed_candidates').then(function(data){
+      $scope.candidates = data;
+  });
+  DataService.getData('parsed_issues').then(function(data){
+      $scope.issues = data;
+  });
+
+  $scope.currentCategoryIndex = parseInt($routeParams.index);
+
+  $scope.showQuestion = function(qid){
+    return $scope.focusQuestion === qid;
+  };
+
+  $scope.toggleQuestion = function(qid){
+    if($scope.focusQuestion === qid)
+       $scope.focusQuestion = false;
+    else
+       $scope.focusQuestion = qid;
+  };
+
+
+  $scope.toTrusted = function(html_code) {
+    return $sce.trustAsHtml(html_code);
+  };
+
+  $scope.responseShowState = {};
+  $scope.toggleResponse = function(rid){
+    $scope.responseShowState[rid] = !$scope.responseShowState[rid];
+
+  };
+  $scope.showResponse = function(rid){
+    return $scope.responseShowState[rid];
+
+  };
+
+  var win    = $(window),
+    fxel     = $(".q_title_active"),
+    eloffset;
+
+
+  win.scroll(function() {
+      fxel     = $(".q_title_active");
+      var w = $(".q_title_active").width();
+      if(fxel && fxel.position()){
+
+        eloffset = fxel.position().top + 150;
+        if (eloffset < win.scrollTop()) {
+
+            $(".q_fixTitle").addClass("q_title_fixed");
+            fxel.width(w+'px');
+        } else {
+            $(".q_fixTitle").removeClass("q_title_fixed");
+        }
+
+      }
+
+  });
+
+
+
+}]);
+
+
+
